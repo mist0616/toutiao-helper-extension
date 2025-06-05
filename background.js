@@ -246,12 +246,8 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 
                                 let articleTextToCopy = title.trim() + '\n\n' + content.trim();
                                 const savedTail = combinedSettings.customTail;
-                                const tailEnabled =
-                                    combinedSettings.customTailEnabled === undefined
-                                        ? true
-                                        : combinedSettings.customTailEnabled;
 
-                                if (tailEnabled && savedTail && savedTail.trim() !== '') {
+                                if (combinedSettings.customTailEnabled && savedTail && savedTail.trim() !== '') {
                                     articleTextToCopy += '\n\n' + savedTail.trim();
                                 }
 

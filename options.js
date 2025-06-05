@@ -108,7 +108,7 @@ function restoreOptions() {
     // Restore other settings from sync storage
     chrome.storage.sync.get(
         {
-            customTailEnabled: true,
+            customTailEnabled: false,
             redirectUrl: '', // Will be loaded as a comma-separated string
             redirectEnabled: false,
         },
