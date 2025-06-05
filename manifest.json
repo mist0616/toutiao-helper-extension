@@ -1,23 +1,24 @@
 {
-  "manifest_version": 3,
-  "name": "头条助手",
-  "version": "1.0",
-  "description": "右键图片或页面，快速复制图片或文章内容。",
-  "permissions": [
-    "contextMenus",
-    "scripting",
-    "activeTab",
-    "clipboardWrite"
-  ],
-  "background": {
-    "service_worker": "background.js"
-  },
-  "host_permissions": [
-    "https://www.toutiao.com/article/*"
-  ],
-  "icons": {
-    "16": "icon16.png",
-    "48": "icon48.png",
-    "128": "icon128.png"
-  }
-} 
+    "manifest_version": 3,
+    "name": "头条助手",
+    "version": "1.0",
+    "description": "右键图片或页面，快速复制图片或文章内容。",
+    "permissions": ["contextMenus", "scripting", "clipboardWrite", "tabs"],
+    "host_permissions": ["https://www.toutiao.com/article/*"],
+    "background": {
+        "service_worker": "background.js"
+    },
+    "action": {
+        "default_icon": {
+            "16": "icon16.png",
+            "48": "icon48.png",
+            "128": "icon128.png"
+        },
+        "default_title": "头条助手"
+    },
+    "icons": {
+        "16": "icon16.png",
+        "48": "icon48.png",
+        "128": "icon128.png"
+    }
+}
