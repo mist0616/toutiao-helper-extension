@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>头条助手设置</title>
+    <style>
+        /* Reset and Body Styles */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: #000;
+            line-height: 1.45;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+            background-image: linear-gradient(135deg, hsl(190, 80%, 75%), hsl(250, 80%, 80%), hsl(320, 80%, 75%), hsl(30, 80%, 75%));
+            background-size: 400% 400%;
+            animation: gradientBG 25s ease infinite;
+        }
+
+        @keyframes gradientBG {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        /* Glass Panel */
+        .glass-panel {
+            width: 100%;
+            max-width: 520px;
+            padding: 24px;
+            background-color: rgba(255, 255, 255, 0.55);
+            -webkit-backdrop-filter: blur(28px);
+            backdrop-filter: blur(28px);
+            border-radius: 18px;
+            border: 1.5px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.22), 0 0 0 1px rgba(0, 0, 0, 0.05) inset;
+            overflow-y: auto;
+            max-height: calc(100vh - 32px);
+        }
+
+        .page-header h1 {
+            font-size: 22px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 18px;
+            color: #000;
+        }
+
+        .settings-section {
+            background-color: rgba(255, 255, 255, 0.25);
+            border-radius: 10px;
+            padding: 18px;
+            margin-bottom: 18px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #111;
+            margin-bottom: 12px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+        }
+
+        .setting-item {
+            margin-bottom: 12px;
+        }
+
+        .setting-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .setting-item label:not(.switch) {
+            display: block;
+            font-size: 13.5px;
+            font-weight: 500;
+            color: #1c1c1e;
+            margin-bottom: 6px;
+        }
+
+        .setting-item .setting-description {
+            font-size: 12px;
+            color: #3c3c43;
+            opacity: 0.85;
+            margin-bottom: 6px;
+            /* This margin is for space *after* the description */
+            line-height: 1.4;
+        }
+
+        .setting-item input[type="text"],
+        .setting-item textarea {
+            width: 100%;
+            padding: 8px 10px;
+            font-size: 13.5px;
+            font-family: inherit;
+            color: #000;
+            background-color: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 7px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+            /* --- 新增/修改的行 --- */
+            margin-bottom: 6px;
+            /* 确保输入控件下方有到描述文字的间距 */
+        }
+
+        .setting-item textarea {
+            min-height: 70px;
+            resize: vertical;
+        }
+
+        .setting-item input[type="text"]:focus,
+        .setting-item textarea:focus {
+            outline: none;
+            background-color: rgba(255, 255, 255, 0.7);
+            border-color: rgba(0, 122, 255, 0.65);
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.12);
+        }
+
+        .setting-switch {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+        }
+
+        .switch-label {
+            font-size: 13.5px;
+            font-weight: 500;
+            color: #1c1c1e;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 26px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #c8c8cc;
+            border-radius: 26px;
+            transition: .3s;
+            border: 0.5px solid rgba(0, 0, 0, 0.04);
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 2.5px;
+            bottom: 2.25px;
+            background-color: white;
+            border-radius: 50%;
+            transition: .3s;
+            box-shadow: 0 0.5px 2px rgba(0, 0, 0, 0.15), 0 0.5px 0.5px rgba(0, 0, 0, 0.05);
+        }
+
+        input:checked+.slider {
+            background-color: #32d74b;
+        }
+
+        input:focus+.slider {
+            box-shadow: 0 0 0 2px rgba(50, 215, 75, 0.3);
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(17.5px);
+        }
+
+        .actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 0;
+        }
+
+        .actions button {
+            background-color: #007aff;
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            padding: 8px 18px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+        }
+
+        .actions button:hover {
+            background-color: #005ec4;
+        }
+
+        .actions button:active {
+            transform: scale(0.97);
+        }
+
+        .status-message {
+            margin-top: 12px;
+            font-size: 13px;
+            font-weight: 500;
+            text-align: center;
+            min-height: 18px;
+            color: #007aff;
+        }
+
+        .status-message.success {
+            color: #28cd41;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="glass-panel">
+        <header class="page-header">
+            <h1>头条助手设置</h1>
+        </header>
+        <main>
+            <div class="settings-section">
+                <h2 class="section-title">小尾巴设置</h2>
+                <div class="setting-item setting-switch">
+                    <span class="switch-label">启用小尾巴</span>
+                    <label class="switch">
+                        <input type="checkbox" id="customTailEnabled">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <label for="customTail">小尾巴内容</label>
+                    <textarea id="customTail" rows="3" placeholder="例如：\n---\n本文通过「头条助手」扩展复制"></textarea>
+                    <p class="setting-description">启用后，此处内容将自动附加到复制的文章末尾。</p>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h2 class="section-title">自动跳转设置</h2>
+                <div class="setting-item setting-switch">
+                    <span class="switch-label">启用自动跳转</span>
+                    <label class="switch">
+                        <input type="checkbox" id="redirectEnabled">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <label for="redirectUrl">自动跳转链接</label>
+                    <input type="text" id="redirectUrl" placeholder="例如：https://www.google.com">
+                    <p class="setting-description">复制成功后，若启用此项，将自动在新标签页打开此链接。</p>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button id="save">保存全部设置</button>
+            </div>
+            <div id="status" class="status-message"></div>
+        </main>
+    </div>
+    <script src="options.js"></script>
+</body>
+
+</html>
