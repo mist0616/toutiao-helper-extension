@@ -82,7 +82,15 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
                         });
                         const width = img.width;
                         const height = img.height;
-                        const cropHeight = Math.max(0, Math.round(height * 0.9));
+
+                        // MODIFIED LOGIC START
+                        // Calculate the height to crop from the bottom (10% of total height),
+                        // but ensure this amount does not exceed 50 pixels.
+                        const pixelsToCrop = Math.max(Math.round(height * 0.1), 100);
+                        // Calculate the final height of the image to be kept.
+                        const cropHeight = height - pixelsToCrop;
+                        // MODIFIED LOGIC END
+
                         const canvas = document.createElement('canvas');
                         canvas.width = width;
                         canvas.height = cropHeight;
