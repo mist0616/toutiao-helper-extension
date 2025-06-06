@@ -281,9 +281,9 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
                 if (
                     injectionResults &&
                     injectionResults[0] &&
-                    injectionResults[0].result === true // 检查脚本是否成功
+                    injectionResults[0].result === true // Check if the script was successful
                 ) {
-                    // 使用 async 函数以便使用 await
+                    // Use async function to allow await
                     chrome.storage.sync.get(['redirectEnabled', 'redirectUrl'], async settings => {
                         if (chrome.runtime.lastError) {
                             console.error(
@@ -293,52 +293,72 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
                             return;
                         }
 
-                        if (
-                            settings.redirectEnabled &&
-                            settings.redirectUrl &&
-                            settings.redirectUrl.trim() !== ''
-                        ) {
-                            const urlsToOpen = settings.redirectUrl
-                                .split(',')
-                                .map(url => url.trim())
-                                .filter(url => url);
+                        // The core action of creating a group and closing the tab is tied to 'redirectEnabled'.
+                        if (settings.redirectEnabled) {
+                            // Get the original tab's info before doing anything async that might change it.
+                            const originalTabId = tab.id;
+                            const originalTabUrl = tab.url;
 
-                            if (urlsToOpen.length > 0) {
-                                console.log(
-                                    `头条助手: 复制成功，准备打开 ${urlsToOpen.length} 个链接并分组。`,
+                            // "将当前文章网页放在打开的分组第一个"
+                            // Place the current article's URL at the beginning of the list.
+                            const urlsToOpen = [originalTabUrl];
+
+                            // Add other URLs from settings if they exist.
+                            if (settings.redirectUrl && settings.redirectUrl.trim() !== '') {
+                                const otherUrls = settings.redirectUrl
+                                    .split(',')
+                                    .map(url => url.trim())
+                                    .filter(url => url);
+                                urlsToOpen.push(...otherUrls);
+                            }
+
+                            console.log(
+                                `头条助手: 复制成功，准备打开 ${urlsToOpen.length} 个链接并分组，然后关闭当前标签页。`,
+                            );
+
+                            try {
+                                // Create all the new tabs. The first one will be the article page.
+                                // They are created inactive by default.
+                                const newTabs = await Promise.all(
+                                    urlsToOpen.map(url =>
+                                        chrome.tabs.create({ url, active: false }),
+                                    ),
                                 );
 
-                                try {
-                                    const newTabs = await Promise.all(
-                                        urlsToOpen.map(url =>
-                                            chrome.tabs.create({ url, active: false }),
-                                        ),
+                                const tabIds = newTabs.map(t => t.id).filter(id => id);
+
+                                if (tabIds.length > 0) {
+                                    // Group the newly created tabs.
+                                    const groupId = await chrome.tabs.group({ tabIds });
+
+                                    // Update the group's appearance.
+                                    await chrome.tabGroups.update(groupId, {
+                                        title: '头条助手',
+                                        color: 'blue',
+                                    });
+
+                                    // Make the first new tab (the article) active.
+                                    await chrome.tabs.update(tabIds[1], { active: true });
+
+                                    console.log(
+                                        `头条助手: 已将 ${tabIds.length} 个标签页放入分组 ${groupId}。`,
                                     );
 
-                                    const tabIds = newTabs.map(tab => tab.id).filter(id => id);
-
-                                    if (tabIds.length > 0) {
-                                        const groupId = await chrome.tabs.group({ tabIds });
-
-                                        await chrome.tabGroups.update(groupId, {
-                                            title: '头条助手',
-                                            color: 'blue',
-                                        });
-
-                                        await chrome.tabs.update(tabIds[0], { active: true });
-
-                                        console.log(
-                                            `头条助手: 已将 ${tabIds.length} 个标签页放入分组 ${groupId}。`,
-                                        );
-                                    }
-                                } catch (e) {
-                                    console.error('头条助手: 创建标签页或分组时出错:', e);
+                                    // "关闭掉当前文章网页"
+                                    // Now, close the original tab.
+                                    await chrome.tabs.remove(originalTabId);
+                                    console.log(
+                                        `头条助手: 已关闭原始标签页 (ID: ${originalTabId})。`,
+                                    );
                                 }
-                            } else {
-                                console.log('头条助手: 复制成功，但未配置有效的目标链接。');
+                            } catch (e) {
+                                console.error(
+                                    '头条助手: 创建/分组标签页或关闭原始标签页时出错:',
+                                    e,
+                                );
                             }
                         } else {
-                            console.log('头条助手: 复制成功，但跳转未启用或未设置目标链接。');
+                            console.log('头条助手: 复制成功，但跳转/分组功能未启用。');
                         }
                     });
                 }
