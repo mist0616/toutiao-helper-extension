@@ -1,5 +1,3 @@
-// background.js
-
 const TARGET_URL_PATTERN = 'https://www.toutiao.com/article/*';
 const TARGET_URL_PREFIX = 'https://www.toutiao.com/article/';
 
@@ -247,7 +245,11 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
                                 let articleTextToCopy = title.trim() + '\n\n' + content.trim();
                                 const savedTail = combinedSettings.customTail;
 
-                                if (combinedSettings.customTailEnabled && savedTail && savedTail.trim() !== '') {
+                                if (
+                                    combinedSettings.customTailEnabled &&
+                                    savedTail &&
+                                    savedTail.trim() !== ''
+                                ) {
                                     articleTextToCopy += '\n\n' + savedTail.trim();
                                 }
 
@@ -255,12 +257,12 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
                                     .writeText(articleTextToCopy)
                                     .then(() => {
                                         showMessage('复制成功', 'success');
-                                        resolveScript(true); // Signal success for redirection
+                                        resolveScript(true);
                                     })
                                     .catch(e => {
                                         showMessage('复制失败：' + e.message, 'error');
                                         console.error('Clipboard writeText error:', e);
-                                        resolveScript(false); // Signal failure
+                                        resolveScript(false);
                                     });
                             });
                         });
@@ -279,9 +281,10 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
                 if (
                     injectionResults &&
                     injectionResults[0] &&
-                    injectionResults[0].result === true // Check if script signaled success
+                    injectionResults[0].result === true // 检查脚本是否成功
                 ) {
-                    chrome.storage.sync.get(['redirectEnabled', 'redirectUrl'], settings => {
+                    // 使用 async 函数以便使用 await
+                    chrome.storage.sync.get(['redirectEnabled', 'redirectUrl'], async settings => {
                         if (chrome.runtime.lastError) {
                             console.error(
                                 '头条助手: Error getting redirect settings:',
@@ -298,45 +301,39 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
                             const urlsToOpen = settings.redirectUrl
                                 .split(',')
                                 .map(url => url.trim())
-                                .filter(url => url !== ''); // Clean up and filter empty strings
+                                .filter(url => url);
 
                             if (urlsToOpen.length > 0) {
                                 console.log(
-                                    `头条助手: 复制成功，准备打开 ${urlsToOpen.length} 个链接.`,
+                                    `头条助手: 复制成功，准备打开 ${urlsToOpen.length} 个链接并分组。`,
                                 );
 
-                                // Open the first URL as the active tab
-                                const firstUrl = urlsToOpen.shift(); // Get and remove the first URL
-                                console.log(`头条助手: 打开当前标签页: ${firstUrl}`);
-                                chrome.tabs.create({ url: firstUrl, active: true }, newTab => {
-                                    if (chrome.runtime.lastError) {
-                                        console.warn(
-                                            `头条助手: 创建新标签页失败 (active): ${firstUrl}`,
-                                            chrome.runtime.lastError.message,
-                                        );
-                                    } else {
+                                try {
+                                    const newTabs = await Promise.all(
+                                        urlsToOpen.map(url =>
+                                            chrome.tabs.create({ url, active: false }),
+                                        ),
+                                    );
+
+                                    const tabIds = newTabs.map(tab => tab.id).filter(id => id);
+
+                                    if (tabIds.length > 0) {
+                                        const groupId = await chrome.tabs.group({ tabIds });
+
+                                        await chrome.tabGroups.update(groupId, {
+                                            title: '头条助手',
+                                            color: 'blue',
+                                        });
+
+                                        await chrome.tabs.update(tabIds[0], { active: true });
+
                                         console.log(
-                                            `头条助手: 新标签页已打开 (active): ${newTab.id} for ${firstUrl}`,
+                                            `头条助手: 已将 ${tabIds.length} 个标签页放入分组 ${groupId}。`,
                                         );
                                     }
-                                });
-
-                                // Open remaining URLs in background tabs
-                                urlsToOpen.forEach(url => {
-                                    console.log(`头条助手: 打开后台标签页: ${url}`);
-                                    chrome.tabs.create({ url: url, active: false }, newTab => {
-                                        if (chrome.runtime.lastError) {
-                                            console.warn(
-                                                `头条助手: 创建新标签页失败 (background): ${url}`,
-                                                chrome.runtime.lastError.message,
-                                            );
-                                        } else {
-                                            console.log(
-                                                `头条助手: 新标签页已打开 (background): ${newTab.id} for ${url}`,
-                                            );
-                                        }
-                                    });
-                                });
+                                } catch (e) {
+                                    console.error('头条助手: 创建标签页或分组时出错:', e);
+                                }
                             } else {
                                 console.log('头条助手: 复制成功，但未配置有效的目标链接。');
                             }
@@ -344,8 +341,6 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
                             console.log('头条助手: 复制成功，但跳转未启用或未设置目标链接。');
                         }
                     });
-                } else {
-                    // console.log("头条助手: 复制操作未成功或未发出跳转信号。");
                 }
             })
             .catch(err => {

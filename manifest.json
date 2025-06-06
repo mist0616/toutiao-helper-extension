@@ -1,9 +1,9 @@
 {
     "manifest_version": 3,
     "name": "头条助手",
-    "version": "1.4",
+    "version": "1.0",
     "description": "复制头条文章图片，自定义文章小尾巴，链接自动跳转，全新磨砂玻璃风格界面。",
-    "permissions": ["contextMenus", "scripting", "tabs", "storage"],
+    "permissions": ["contextMenus", "scripting", "tabs", "storage", "tabGroups"],
     "host_permissions": ["https://www.toutiao.com/article/*"],
     "background": {
         "service_worker": "background.js"
