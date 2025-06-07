@@ -3,291 +3,461 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>头条助手设置</title>
     <style>
-        *,
-        *::before,
-        *::after {
+        /* --- 基础重置与全局样式 --- */
+        * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
-        html,
-        body {
-            height: 100%;
-            overflow: hidden;
+        :root {
+            --primary: #007AFF;
+            --primary-hover: #0062CC;
+            --success: #34C759;
+            --danger: #FF3B30;
+            --bg-light: #F2F2F7;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --text-primary: #1C1C1E;
+            --text-secondary: #636366;
+            --border: rgba(0, 0, 0, 0.1);
+            /* 优化: 边框稍微明显一点 */
+            --border-focus: rgba(0, 122, 255, 0.3);
+            --shadow: 0 4px_20px rgba(0, 0, 0, 0.05);
+            --transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+            /* 优化: 过渡稍快一些 */
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            color: #000;
-            line-height: 1.45;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+            background: var(--bg-light);
+            color: var(--text-primary);
+            line-height: 1.5;
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 16px;
-            background-image: linear-gradient(135deg, hsl(190, 80%, 75%), hsl(250, 80%, 80%), hsl(320, 80%, 75%), hsl(30, 80%, 75%));
-            background-size: 400% 400%;
-            animation: gradientBG 25s ease infinite;
+            padding: 20px;
         }
 
-        @keyframes gradientBG {
-            0% {
-                background-position: 0% 50%;
-            }
-
-            50% {
-                background-position: 100% 50%;
-            }
-
-            100% {
-                background-position: 0% 50%;
-            }
-        }
-
-        /* Glass Panel */
-        .glass-panel {
+        /* --- 主卡片容器 --- */
+        .card {
             width: 100%;
-            max-width: 520px;
-            padding: 24px;
-            background-color: rgba(255, 255, 255, 0.55);
-            -webkit-backdrop-filter: blur(28px);
-            backdrop-filter: blur(28px);
-            border-radius: 18px;
-            border: 1.5px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.22), 0 0 0 1px rgba(0, 0, 0, 0.05) inset;
-            overflow-y: auto;
-            max-height: calc(100vh - 32px);
+            max-width: 800px;
+            background: var(--card-bg);
+            border-radius: 14px;
+            /* 优化: 圆角稍小 */
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            overflow: hidden;
+            transform: translateY(0);
+            transition: var(--transition);
+            animation: fadeIn 0.5s ease-out;
         }
 
-        .page-header h1 {
-            font-size: 22px;
-            font-weight: 600;
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.07);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* --- 标题区域 --- */
+        .header {
+            /* 优化: 减少垂直内边距 */
+            padding: 24px 28px 20px;
             text-align: center;
-            margin-bottom: 18px;
-            color: #000;
+            border-bottom: 1px solid var(--border);
         }
 
-        .settings-section {
-            background-color: rgba(255, 255, 255, 0.25);
-            border-radius: 10px;
-            padding: 18px;
-            margin-bottom: 18px;
+        .header h1 {
+            font-size: 22px;
+            /* 优化: 尺寸稍小 */
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .header p {
+            font-size: 14px;
+            /* 优化: 尺寸稍小 */
+        }
+
+        /* --- 设置区块 --- */
+        .section {
+            /* 优化: 减少内边距 */
+            padding: 24px 28px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section:last-child {
+            border-bottom: none;
         }
 
         .section-title {
-            font-size: 16px;
+            font-size: 17px;
+            /* 优化: 尺寸稍小 */
             font-weight: 600;
-            color: #111;
-            margin-bottom: 12px;
-            padding-bottom: 6px;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+            display: flex;
+            align-items: center;
         }
 
-        .setting-item {
-            margin-bottom: 12px;
+        .section-title::before {
+            content: "";
+            display: inline-block;
+            width: 4px;
+            height: 17px;
+            background: var(--primary);
+            border-radius: 2px;
+            margin-right: 10px;
+            /* 优化: 间距稍小 */
         }
 
-        .setting-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .setting-item label:not(.switch) {
-            display: block;
-            font-size: 13.5px;
-            font-weight: 500;
-            color: #1c1c1e;
-            margin-bottom: 6px;
-        }
-
-        .setting-item .setting-description {
-            font-size: 12px;
-            color: #3c3c43;
-            opacity: 0.85;
-            margin-bottom: 6px;
-            /* This margin is for space *after* the description */
-            line-height: 1.4;
-        }
-
-        .setting-item input[type="text"],
-        .setting-item textarea {
-            width: 100%;
-            padding: 8px 10px;
-            font-size: 13.5px;
-            font-family: inherit;
-            color: #000;
-            background-color: rgba(255, 255, 255, 0.6);
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            border-radius: 7px;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
-            /* --- 新增/修改的行 --- */
-            margin-bottom: 6px;
-            /* 确保输入控件下方有到描述文字的间距 */
-        }
-
-        .setting-item textarea {
-            min-height: 70px;
-            resize: vertical;
-        }
-
-        .setting-item input[type="text"]:focus,
-        .setting-item textarea:focus {
-            outline: none;
-            background-color: rgba(255, 255, 255, 0.7);
-            border-color: rgba(0, 122, 255, 0.65);
-            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.12);
-        }
-
-        .setting-switch {
+        /* --- 开关控件 --- */
+        .toggle-container {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 6px 0;
+            /* 优化: 减少下边距 */
+            margin-bottom: 20px;
         }
 
-        .switch-label {
-            font-size: 13.5px;
+        .toggle-label {
+            font-size: 15px;
+            /* 优化: 尺寸稍小 */
             font-weight: 500;
-            color: #1c1c1e;
+            flex: 1;
         }
 
-        .switch {
+        .toggle-switch {
             position: relative;
             display: inline-block;
-            width: 44px;
-            height: 26px;
+            width: 46px;
+            /* 优化: 尺寸稍小 */
+            height: 28px;
+            /* 优化: 尺寸稍小 */
         }
 
-        .switch input {
+        .toggle-switch input {
             opacity: 0;
             width: 0;
             height: 0;
         }
 
-        .slider {
+        .toggle-slider {
             position: absolute;
             cursor: pointer;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: #c8c8cc;
-            border-radius: 26px;
-            transition: .3s;
-            border: 0.5px solid rgba(0, 0, 0, 0.04);
+            background-color: #E0E0E0;
+            transition: var(--transition);
+            border-radius: 28px;
         }
 
-        .slider:before {
+        .toggle-slider:before {
             position: absolute;
             content: "";
-            height: 20px;
-            width: 20px;
-            left: 2.5px;
-            bottom: 2.25px;
+            height: 24px;
+            /* 优化: 尺寸稍小 */
+            width: 24px;
+            /* 优化: 尺寸稍小 */
+            left: 2px;
+            bottom: 2px;
             background-color: white;
+            transition: var(--transition);
             border-radius: 50%;
-            transition: .3s;
-            box-shadow: 0 0.5px 2px rgba(0, 0, 0, 0.15), 0 0.5px 0.5px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
         }
 
-        input:checked+.slider {
-            background-color: #32d74b;
+        input:checked+.toggle-slider {
+            background-color: var(--success);
         }
 
-        input:focus+.slider {
-            box-shadow: 0 0 0 2px rgba(50, 215, 75, 0.3);
+        input:checked+.toggle-slider:before {
+            transform: translateX(18px);
+            /* 优化: 移动距离适配新尺寸 */
         }
 
-        input:checked+.slider:before {
-            transform: translateX(17.5px);
+        /* --- 小尾巴列表 --- */
+        .tails-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            /* 优化: 列表项间距减小 */
+            margin-bottom: 20px;
+            /* 优化: 减少下边距 */
         }
 
+        .tail-item {
+            display: flex;
+            align-items: center;
+            background: white;
+            border-radius: 10px;
+            /* 优化: 圆角稍小 */
+            /* 优化: 减少内边距 */
+            padding: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+            transition: var(--transition);
+            border: 1px solid var(--border);
+        }
+
+        .tail-item:hover {
+            border-color: rgba(0, 122, 255, 0.3);
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.06);
+        }
+
+        .tail-radio {
+            margin-right: 12px;
+            /* 优化: 间距稍小 */
+        }
+
+        .tail-content {
+            flex: 1;
+        }
+
+        .tail-textarea {
+            width: 100%;
+            padding: 10px;
+            /* 优化: 减少内边距 */
+            font-family: inherit;
+            font-size: 14px;
+            /* 优化: 尺寸稍小 */
+            color: var(--text-primary);
+            background: rgba(242, 242, 247, 0.6);
+            border: 1px solid transparent;
+            /* 优化: 默认无边框，更简洁 */
+            border-radius: 8px;
+            resize: vertical;
+            min-height: 60px;
+            /* 优化: 默认高度减小 */
+            transition: var(--transition);
+        }
+
+        .tail-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 3px var(--border-focus);
+        }
+
+        .tail-delete {
+            width: 32px;
+            /* 优化: 尺寸稍小 */
+            height: 32px;
+            /* 优化: 尺寸稍小 */
+            margin-left: 8px;
+            /* 优化: 间距稍小 */
+            border-radius: 50%;
+            background: transparent;
+            border: none;
+            color: #8E8E93;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            /* 核心优化: 默认隐藏删除按钮 */
+            opacity: 0;
+            transform: scale(0.8);
+        }
+
+        /* 核心优化: 悬停时显示删除按钮 */
+        .tail-item:hover .tail-delete {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .tail-delete:hover {
+            background: rgba(255, 59, 48, 0.1);
+            color: var(--danger);
+        }
+
+        /* --- 新增按钮 --- */
+        .add-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 12px;
+            /* 优化: 减少内边距 */
+            background: transparent;
+            border: 1px dashed var(--border);
+            border-radius: 10px;
+            color: var(--primary);
+            font-size: 14px;
+            /* 优化: 尺寸稍小 */
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .add-button:hover {
+            background: rgba(0, 122, 255, 0.05);
+            border-color: var(--primary);
+        }
+
+        .add-button::before {
+            content: "+";
+            font-size: 18px;
+            margin-right: 6px;
+        }
+
+        /* --- 空状态 --- */
+        .empty-state {
+            text-align: center;
+            padding: 20px;
+            /* 优化: 减少内边距 */
+            color: var(--text-secondary);
+        }
+
+        .empty-state svg {
+            width: 40px;
+            /* 优化: 图标稍小 */
+            height: 40px;
+        }
+
+        .empty-state p {
+            margin-top: 8px;
+            font-size: 14px;
+        }
+
+        /* --- 操作按钮 --- */
         .actions {
+            padding: 20px 28px;
+            /* 优化: 减少内边距 */
             display: flex;
             justify-content: flex-end;
-            margin-top: 0;
+            background-color: rgba(0, 0, 0, 0.02);
+            /* 优化: 增加轻微底色区分 */
         }
 
-        .actions button {
-            background-color: #007aff;
+        .save-button {
+            background: var(--primary);
             color: white;
-            font-size: 14px;
+            font-size: 15px;
+            /* 优化: 尺寸稍小 */
             font-weight: 500;
-            padding: 8px 18px;
+            padding: 10px 28px;
+            /* 优化: 减少内边距 */
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
+            /* 优化: 圆角稍小 */
             cursor: pointer;
-            transition: background-color 0.2s ease, transform 0.1s ease;
+            transition: var(--transition);
+            box-shadow: 0 4px 10px rgba(0, 122, 255, 0.2);
         }
 
-        .actions button:hover {
-            background-color: #005ec4;
+        .save-button:hover {
+            background: var(--primary-hover);
+            box-shadow: 0 6px 14px rgba(0, 122, 255, 0.3);
         }
 
-        .actions button:active {
-            transform: scale(0.97);
+        .save-button:active {
+            transform: scale(0.98);
         }
 
+        /* --- 状态消息 --- */
         .status-message {
-            margin-top: 12px;
-            font-size: 13px;
-            font-weight: 500;
             text-align: center;
-            min-height: 18px;
-            color: #007aff;
+            padding: 0 28px 20px;
+            /* 优化: 减少下边距 */
+            min-height: 21px;
+            /* 优化: 高度减小 */
+            font-size: 13px;
+            /* 优化: 尺寸稍小 */
+            font-weight: 500;
+            transition: all 0.3s ease;
         }
 
         .status-message.success {
-            color: #28cd41;
+            color: var(--success);
+        }
+
+        .status-message.error {
+            color: var(--danger);
+        }
+
+        /* --- 响应式调整 --- */
+        @media (max-width: 600px) {
+            body {
+                align-items: flex-start;
+                /* 优化: 移动端从顶部开始 */
+                padding: 0;
+            }
+
+            .card {
+                border-radius: 0;
+                border: none;
+                box-shadow: none;
+                height: 100vh;
+            }
+
+            .header,
+            .section,
+            .actions {
+                padding-left: 20px;
+                padding-right: 20px;
+            }
+
+            .save-button {
+                width: 100%;
+            }
         }
     </style>
 </head>
 
 <body>
-    <div class="glass-panel">
-        <header class="page-header">
+    <div class="card">
+        <div class="header">
             <h1>头条助手设置</h1>
-        </header>
-        <main>
-            <div class="settings-section">
-                <h2 class="section-title">小尾巴设置</h2>
-                <div class="setting-item setting-switch">
-                    <span class="switch-label">启用小尾巴</span>
-                    <label class="switch">
-                        <input type="checkbox" id="customTailEnabled">
-                        <span class="slider round"></span>
-                    </label>
-                </div>
-                <div class="setting-item">
-                    <label for="customTail">小尾巴内容</label>
-                    <textarea id="customTail" rows="3" placeholder="例如：\n---\n本文通过「头条助手」扩展复制"></textarea>
-                    <p class="setting-description">启用后，此处内容将自动附加到复制的文章末尾。</p>
+        </div>
+
+        <div class="section">
+            <div class="toggle-container">
+                <h2 class="section-title ">小尾巴</h2>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="customTailEnabled">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+
+            <div id="tails-list-container" class="tails-container">
+                <div class="empty-state">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M3 7H21M6 7H18V18C18 19.1046 17.1046 20 16 20H8C6.89543 20 6 19.1046 6 18V7ZM10 11V16M14 11V16M10 4H14M4 7H20"
+                            stroke="#8E8E93" stroke-width="1.5" stroke-linecap="round" />
+                    </svg>
+                    <p>暂无小尾巴，点击下方添加新项</p>
                 </div>
             </div>
 
-            <div class="settings-section">
-                <h2 class="section-title">自动跳转设置</h2>
-                <div class="setting-item setting-switch">
-                    <span class="switch-label">启用自动跳转</span>
-                    <label class="switch">
-                        <input type="checkbox" id="redirectEnabled">
-                        <span class="slider round"></span>
-                    </label>
-                </div>
-                <div class="setting-item">
-                    <label for="redirectUrl">自动跳转链接</label>
-                    <input type="text" id="redirectUrl" placeholder="例如：https://www.google.com">
-                    <p class="setting-description">复制成功后，若启用此项，将自动在新标签页打开此链接。</p>
-                </div>
-            </div>
+            <button id="addTail" class="add-button">新增小尾巴</button>
+        </div>
 
-            <div class="actions">
-                <button id="save">保存全部设置</button>
-            </div>
-            <div id="status" class="status-message"></div>
-        </main>
+        <div id="status" class="status-message"></div>
+
+        <div class="actions">
+            <button id="save" class="save-button">保存全部设置</button>
+        </div>
     </div>
+
     <script src="options.js"></script>
 </body>
 

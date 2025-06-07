@@ -2,8 +2,8 @@
     "manifest_version": 3,
     "name": "头条助手",
     "version": "1.0",
-    "description": "复制文章图片，自定义文章小尾巴，链接自动跳转。",
-    "permissions": ["contextMenus", "scripting", "tabs", "storage", "tabGroups"],
+    "description": "复制文章图片，自定义文章小尾巴。",
+    "permissions": ["contextMenus", "scripting", "tabs", "storage"],
     "host_permissions": ["https://www.toutiao.com/article/*"],
     "background": {
         "service_worker": "background.js"

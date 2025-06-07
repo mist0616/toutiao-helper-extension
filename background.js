@@ -57,39 +57,38 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
             }
 
             if (info.menuItemId === 'copy-article') {
-                chrome.storage.sync.get(
-                    ['customTailEnabled', 'redirectEnabled', 'redirectUrl'],
-                    syncItems => {
-                        chrome.storage.local.get(['customTail'], localItems => {
-                            const settings = { ...syncItems, ...localItems };
+                // Fetch settings from both sync and local storage
+                chrome.storage.sync.get(['customTailEnabled', 'activeTailIndex'], syncItems => {
+                    chrome.storage.local.get(['customTails'], localItems => {
+                        let activeTailText = '';
+                        // Check if enabled, index is valid, and the list exists
+                        if (
+                            syncItems.customTailEnabled &&
+                            syncItems.activeTailIndex >= 0 &&
+                            localItems.customTails &&
+                            localItems.customTails[syncItems.activeTailIndex]
+                        ) {
+                            activeTailText = localItems.customTails[syncItems.activeTailIndex].text;
+                        }
 
-                            chrome.scripting.executeScript(
-                                {
-                                    target: { tabId: tab.id },
-                                    func: copyArticle,
-                                    args: [settings],
-                                },
-                                results => {
-                                    if (
-                                        results &&
-                                        results[0] &&
-                                        results[0].result &&
-                                        settings.redirectEnabled
-                                    ) {
-                                        handleRedirect(tab, settings.redirectUrl);
-                                    }
-                                },
-                            );
+                        const settings = {
+                            customTailEnabled: syncItems.customTailEnabled,
+                            activeTailText: activeTailText, // Pass the chosen tail text
+                        };
+
+                        chrome.scripting.executeScript({
+                            target: { tabId: tab.id },
+                            func: copyArticle,
+                            args: [settings],
                         });
-                    },
-                );
+                    });
+                });
             }
         },
     );
 });
 
-// 为了代码清晰，将注入的函数提取出来
-// 这些函数将在页面环境中被 toString() 并执行
+// copySingleImage and copyAllImages functions remain the same...
 
 function copySingleImage(imgUrl) {
     if (!imgUrl) {
@@ -145,6 +144,7 @@ function copyAllImages() {
         });
 }
 
+// copyArticle function now uses 'activeTailText'
 function copyArticle(settings) {
     const title =
         document.querySelector('.article-content h1')?.innerText ||
@@ -169,8 +169,13 @@ function copyArticle(settings) {
     }
 
     let articleTextToCopy = title.trim() + '\n\n' + content.trim();
-    if (settings.customTailEnabled && settings.customTail && settings.customTail.trim() !== '') {
-        articleTextToCopy += '\n\n' + settings.customTail.trim();
+    // Use the new settings property 'activeTailText'
+    if (
+        settings.customTailEnabled &&
+        settings.activeTailText &&
+        settings.activeTailText.trim() !== ''
+    ) {
+        articleTextToCopy += '\n\n' + settings.activeTailText.trim();
     }
 
     navigator.clipboard
@@ -179,33 +184,6 @@ function copyArticle(settings) {
         .catch(e => showMessage('复制失败：' + e.message, 'error'));
 
     return true;
-}
-
-async function handleRedirect(originalTab, redirectUrl) {
-    if (!originalTab || !originalTab.id) return;
-    const urlsToOpen = [originalTab.url];
-    if (redirectUrl && redirectUrl.trim() !== '') {
-        urlsToOpen.push(
-            ...redirectUrl
-                .split(',')
-                .map(url => url.trim())
-                .filter(Boolean),
-        );
-    }
-    try {
-        const newTabs = await Promise.all(
-            urlsToOpen.map(url => chrome.tabs.create({ url, active: false })),
-        );
-        const tabIds = newTabs.map(t => t.id).filter(Boolean);
-        if (tabIds.length > 0) {
-            const groupId = await chrome.tabs.group({ tabIds });
-            await chrome.tabGroups.update(groupId, { title: '头条助手', color: 'blue' });
-            await chrome.tabs.update(tabIds[1] || tabIds[0], { active: true });
-            await chrome.tabs.remove(originalTab.id);
-        }
-    } catch (e) {
-        console.error('头条助手: 创建/分组标签页或关闭原始标签页时出错:', e);
-    }
 }
 
 chrome.action.onClicked.addListener(tab => {
