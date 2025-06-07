@@ -30,20 +30,17 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
         return;
     }
 
-    // 第1步：注入辅助函数文件
     chrome.scripting.executeScript(
         {
             target: { tabId: tab.id },
             files: ['content-helpers.js'],
         },
-        // 第2步：在注入成功后的回调中，执行具体逻辑
         () => {
             if (chrome.runtime.lastError) {
                 console.error(`注入脚本失败: ${chrome.runtime.lastError.message}`);
                 return;
             }
 
-            // 根据不同的菜单项，准备不同的执行函数
             if (info.menuItemId === 'copy-image') {
                 chrome.scripting.executeScript({
                     target: { tabId: tab.id },
@@ -60,14 +57,12 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
             }
 
             if (info.menuItemId === 'copy-article') {
-                // 对于需要设置的文章复制，先获取设置
                 chrome.storage.sync.get(
                     ['customTailEnabled', 'redirectEnabled', 'redirectUrl'],
                     syncItems => {
                         chrome.storage.local.get(['customTail'], localItems => {
                             const settings = { ...syncItems, ...localItems };
 
-                            // 然后执行脚本，并把设置传进去
                             chrome.scripting.executeScript(
                                 {
                                     target: { tabId: tab.id },
@@ -142,7 +137,7 @@ function copyAllImages() {
             const blob = new Blob([finalHtml], { type: 'text/html' });
             navigator.clipboard
                 .write([new ClipboardItem({ 'text/html': blob })])
-                .then(() => showMessage('复制成功！', 'success'))
+                .then(() => showMessage('复制成功', 'success'))
                 .catch(e => showMessage(`复制失败: ${e.message}`, 'error'));
         })
         .catch(error => {
@@ -155,7 +150,7 @@ function copyArticle(settings) {
         document.querySelector('.article-content h1')?.innerText ||
         document.querySelector('h1.article-title')?.innerText ||
         document.title;
-    const pSelector = '.article-content p'; // 使用一个更通用的选择器
+    const pSelector = '.article-content p';
     const ps = document.querySelectorAll(pSelector);
 
     let content = '';
@@ -183,7 +178,7 @@ function copyArticle(settings) {
         .then(() => showMessage('复制成功', 'success'))
         .catch(e => showMessage('复制失败：' + e.message, 'error'));
 
-    return true; // 返回成功状态，用于后续跳转
+    return true;
 }
 
 async function handleRedirect(originalTab, redirectUrl) {

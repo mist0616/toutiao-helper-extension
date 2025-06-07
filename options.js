@@ -1,14 +1,12 @@
-// options.js
-
 function saveOptions() {
     const customTailText = document.getElementById('customTail').value;
     const customTailEnabled = document.getElementById('customTailEnabled').checked;
-    const redirectUrl = document.getElementById('redirectUrl').value; // This will now contain comma-separated URLs
+    const redirectUrl = document.getElementById('redirectUrl').value;
     const redirectEnabled = document.getElementById('redirectEnabled').checked;
 
     let operationsCompleted = 0;
     const totalOperations = 2;
-    let G_HAS_ERROR = false; // Global error flag for this save operation
+    let G_HAS_ERROR = false;
 
     function finalizeSave() {
         operationsCompleted++;
@@ -18,20 +16,19 @@ function saveOptions() {
                 status.textContent = '设置已保存！';
                 status.className = 'status-message success';
             }
-            // If G_HAS_ERROR is true, error message already shown by handleError
             setTimeout(
                 function () {
                     status.textContent = '';
                     status.className = 'status-message';
                 },
                 G_HAS_ERROR ? 4000 : 2500,
-            ); // Longer display for errors
-            G_HAS_ERROR = false; // Reset flag
+            );
+            G_HAS_ERROR = false;
         }
     }
 
     function handleError(storageArea, error) {
-        G_HAS_ERROR = true; // Set error flag
+        G_HAS_ERROR = true;
         const status = document.getElementById('status');
         let errorMessage = `保存 ${storageArea} 失败`;
         if (error && error.message) {
@@ -52,7 +49,6 @@ function saveOptions() {
         console.error(`Error saving to ${storageArea}:`, error);
     }
 
-    // 1. Save customTail to local storage
     chrome.storage.local.set(
         {
             customTail: customTailText,
@@ -67,11 +63,10 @@ function saveOptions() {
         },
     );
 
-    // 2. Save other settings to sync storage
     chrome.storage.sync.set(
         {
             customTailEnabled: customTailEnabled,
-            redirectUrl: redirectUrl, // Saved as a comma-separated string
+            redirectUrl: redirectUrl,
             redirectEnabled: redirectEnabled,
         },
         function () {
@@ -86,7 +81,6 @@ function saveOptions() {
 }
 
 function restoreOptions() {
-    // Restore customTail from local storage
     chrome.storage.local.get(
         {
             customTail: '',
@@ -105,11 +99,10 @@ function restoreOptions() {
         },
     );
 
-    // Restore other settings from sync storage
     chrome.storage.sync.get(
         {
             customTailEnabled: false,
-            redirectUrl: '', // Will be loaded as a comma-separated string
+            redirectUrl: '',
             redirectEnabled: false,
         },
         function (syncItems) {
